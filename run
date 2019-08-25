@@ -1,0 +1,26 @@
+#!/bin/sh
+
+SRC_TARBALL=$1
+CONTAINER_NAME="ghc-build-yields"
+((!$#)) && echo "Put the tarball file for GHC sources and pass as the first argument. " && exit 1
+
+GHC_VERSION=`tar -tzf ${SRC_TARBALL} | head -1 | cut -f1 -d"/"`
+
+tar xf $SRC_TARBALL
+cd ./$GHC_VERSION
+
+cp ./mk/build.mk.sample ./mk/build.mk
+
+sed -i '' \
+    's|#BuildFlavour = perf$|BuildFlavour = perf|g' \
+    ./mk/build.mk
+sed -i '' \
+    's|ghc-options: -this-unit-id base$|ghc-options: -this-unit-id base -fno-omit-yields|g' \
+    ./libraries/base/base.cabal
+
+docker run \
+    --rm -t \
+    --name $CONTAINER_NAME \
+    -v `pwd`:/workspace \
+    gregweber/ghc-haskell-dev /bin/bash \
+    -c "cd /workspace && ./configure && make && make binary-dist"
