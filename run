@@ -22,5 +22,5 @@ docker run \
     --rm -t \
     --name $CONTAINER_NAME \
     -v `pwd`:/workspace \
-    gregweber/ghc-haskell-dev /bin/bash \
+    mistzzt/haskell-ide-engine:0.11-ghc8.4.4 /bin/bash \
     -c "cd /workspace && ./configure && make && make binary-dist"
